@@ -1,0 +1,166 @@
+# AssetZen
+
+## Introduction
+
+This site contains reference documentation for [AssetZen](http://assetzen.net)'s
+REST API. It provides documentation and examples for all public API endpoints.
+
+## Usage Notes
+
+All API methods require OAuth2 authentication and must be run with a user grant.
+You will need to [create an application](https://app.assetzen.net/oauth/applications/new)
+in order to perform API requests.
+
+API usage is subject to the [API usage agreement](http://assetzen.net/api-usage-agreement)
+
+All response data is scoped to the user the request is performed for, usually
+at an organization level.
+
+To use the API you must either set the HTTP `Accept` header to `application/json`
+or append `.json` to the path of all request URLs.
+
+All APIs respond with JSON data, and accept requests either as `application/json`
+or as `application/x-www-urlencoded`
+
+## Images [/images]
+
+Images are the core resource in AssetZen, and most resources will refer back
+to images.
+
+### Search Images [GET /images?q={q}&uploaded[from]={uploaded_from}&uploaded[to]={uploaded_to}&tags[]={tags}&albums[]={abums}&page={page}&limit={limit}]
+
+Search the image library.
+Parameters for this API are passed via the URL query.
+
++ Parameters
+
+  + q: `food` (string, optional) - Search Query
+
+    Search query to run, will be tokenized and passed as a full-text search query.
+
+  + uploaded_from: `1495200928` (number, optional) - Oldest date to include, UNIX timestamp.
+
+  + uploaded_to: `1495207928` (number, optional) - Newest date to include, UNIX timestamp.
+
+  + uploader: `2048` (number, optional) - ID of user who uploaded image.
+
+    ID of the user who uploaded the image. A list of users for an account
+    can be found in the [list account users] api.
+
+  + tags: `food` (array[string], optional) - List of tags to match, all of which must be present for an image to match.
+
+  + albums: `BAhrYglpKW5u` (array[string], optional) - List of album IDs, images must be present in at least one of the listed albums.
+
+  + page: `1` (number, optional) - Page number of results to get.
+
+  + limit:  `100` (number, optional) - Maximum number of results to return. (Default 25, maximum 500)
+
+    Default: 25
+    Minimum: 1
+    Maximum: 500
+
++ Response 200 (application/json)
+
+  + Body
+
+      {
+        "count": 1105,
+        "images": [
+          // List of images
+        ]
+      }
+
+### Get an image [GET /images/{id}]
+
+Get data for a single image.
+
++ Parameters
+
+  + id: `BAhrYglpKW5u` (string, required) - Image ID
+
++ Response 200 (application/json)
+
+  + Body
+
+### List Invalidations [GET /images/{id}/invalidations]
+
+Lists CDN invalidations for the given image.
+
++ Parameters
+
+  + id: (string, required) - Image ID
+
++ Response 200 (application/json)
+
+  + Body
+
+    [
+      {
+        "user": {
+          "id": 1000,
+          "email": "user@example.com",
+          "name": "Example User"
+        },
+        "status": "completed",
+        "created_at": "2017-05-17 09:02:20Z",
+        "completed_at": "2017-05-17 09:02:50Z",
+        "reference": "I1AG0OXD8ULMCQ"
+      }
+    ]
+
+### Create Invalidation [PUT /images/{id}/invalidations]
+
+Request CDN invalidation for the given image.
+
+**Note that the invalidation process is asynchronous and depending on the CDN
+platform can take several minutes to complete.**
+
+**Invalidations are subject to stricter usage limits than other APIs and should
+be used only when removal of an image from CDN edge locations is absolutely nessacary**
+
++ Parameters
+
+  + id: (string, required) - Image ID
+
++ Response 204
+
+## Albums [/albums]
+
+Albums are collections of images, with some additional properties.
+
+### List Albums [GET /albums]
+
++ Response 200 (application/json)
+
+  + Body
+
+    [
+      {
+        "id": 2017,
+        "title": "Example Album",
+        "parent_id": null,
+        "sid": "pLpS8ah8YVme",
+        "description": null,
+        "created_at": "2017-04-28T13:55:45.106Z",
+        "updated_at": "2017-05-10T14:41:51.854Z",
+        "is_public": true
+      }
+    ]
+
+## Account [/account]
+
+The account refers to the organization level, which acts as the data owner.
+
+### Get Account Details [GET]
+
+Lists account information.
+
++ Response 200 (application/json)
+
+      {
+        "name": "Example Account",
+        "id": "abcdefghijk",
+        "settings": {
+          // Key-value pairs of account-level settings
+        }
+      }
